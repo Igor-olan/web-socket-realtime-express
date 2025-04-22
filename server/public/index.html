@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simple WebSocket Chat</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    #messageBox { border: 1px solid #ccc; padding: 10px; height: 250px; overflow-y: auto; margin-bottom: 10px; background: #f9f9f9; }
+    input, button { padding: 8px; }
+    button { margin-left: 5px; }
+  </style>
+</head>
+<body>
+  <h2>WebSocket Chat</h2>
+  <div id="messageBox"></div>
+  <input type="text" id="messageInput" placeholder="Ketik pesan...">
+  <button id="sendButton">Kirim</button>
+
+  <script>
+    const socket = new WebSocket('ws://127.0.0.1:3000');
+    const box = document.getElementById('messageBox');
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendButton');
+
+    const append = msg => {
+      box.innerHTML += `<div>${msg}</div>`;
+      box.scrollTop = box.scrollHeight;
+    };
+
+    socket.onmessage = event => {
+      const { data } = JSON.parse(event.data);
+      if (data) {
+        append(`Server: ${data.text}`);
+      }
+    };
+    socket.onerror = error => append(`❌ Error: ${error.message}`);
+    socket.onopen = () => append('✅ Terhubung ke server');
+    socket.onmessage = () => {};
+    socket.onclose = () => {};
+
+    const sendMessage = () => {
+      const text = input.value.trim();
+      if (text && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ data: { text } }));
+        append(`You: ${text}`);
+        input.value = '';
+      }
+    };
+
+    sendBtn.onclick = sendMessage;
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>

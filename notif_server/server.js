@@ -24,7 +24,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-app.post('/send-message',use(cors(corsOptions)), (req, res) => {
+app.post('/send-message',(cors(corsOptions)), (req, res) => {
     
     const { name, message } = req.body
 
